@@ -1,0 +1,4 @@
+name: draw
+description: A pub package
+dependencies:
+  leaflet: any
