@@ -10,7 +10,7 @@ part 'polyline.dart';
 part 'polygon.dart';
 part 'rectangle.dart';
 
-class Feature extends Handler {
+abstract class Feature extends Handler {
   //includes: L.Mixin.Events,
 
   Element _container, _overlayPane, _popupPane;

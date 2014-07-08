@@ -1,6 +1,6 @@
 part of leaflet.draw.draw.handler;
 
-class SimpleShape extends Feature {
+abstract class SimpleShape extends Feature {
 
   Map options = {
     'repeatMode': false
