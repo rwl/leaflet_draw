@@ -1,4 +1,4 @@
-library draw;
+library leaflet.draw;
 
 import 'dart:html';
 import 'package:leaflet/leaflet.dart';

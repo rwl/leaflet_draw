@@ -1,6 +1,6 @@
 part of draw;
 
-class Toolbar {
+abstract class Toolbar {
 
   Map _modes;
   List _actionButtons;
@@ -13,6 +13,10 @@ class Toolbar {
     this._actionButtons = [];
     this._activeMode = null;
   }
+
+  getModeHandlers(LeafletMap map);
+
+  getActions(handler);
 
   enabled() {
     return this._activeMode != null;
