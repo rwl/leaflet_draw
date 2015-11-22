@@ -1,7 +1,9 @@
 name: leaflet_draw
 version: 0.0.1
+author: Richard Lincoln <r.w.lincoln@gmail.com>
 description: Draw and edit vectors and markers on Leaflet maps
+homepage: https://github.com/rwl/leaflet_draw
 dependencies:
+  leaflet: '>=0.0.1 <0.1.0'
+dev_dependencies:
   browser: any
-  leaflet:
-    path: ../leaflet
