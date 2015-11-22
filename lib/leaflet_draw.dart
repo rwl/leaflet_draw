@@ -1,158 +1,15 @@
 library leaflet.draw;
 
 import 'dart:html';
+import 'dart:async';
 import 'dart:js';
 import 'package:leaflet/leaflet.dart';
+import 'package:leaflet/leaflet.dart' as leaflet;
+import 'src/config.dart';
+
+final DrawLocal drawLocal = new DrawLocal();
 
 class Draw implements Control {
-  static set draw_toolbar_actions_title(String value) {
-    context['L']['drawLocal']['draw']['toolbar']['actions']['title'] = value;
-  }
-
-  static set draw_toolbar_actions_text(String value) {
-    context['L']['drawLocal']['draw']['toolbar']['actions']['text'] = value;
-  }
-
-  static set draw_toolbar_undo_title(String value) {
-    context['L']['drawLocal']['draw']['toolbar']['undo']['title'] = value;
-  }
-
-  static set draw_toolbar_undo_text(String value) {
-    context['L']['drawLocal']['draw']['toolbar']['undo']['text'] = value;
-  }
-
-  static set draw_toolbar_buttons_polyline(String value) {
-    context['L']['drawLocal']['draw']['toolbar']['buttons']['polyline'] = value;
-  }
-
-  static set draw_toolbar_buttons_polygon(String value) {
-    context['L']['drawLocal']['draw']['toolbar']['buttons']['polygon'] = value;
-  }
-
-  static set draw_toolbar_buttons_rectangle(String value) {
-    context['L']['drawLocal']['draw']['toolbar']['buttons']
-        ['rectangle'] = value;
-  }
-
-  static set draw_toolbar_buttons_circle(String value) {
-    context['L']['drawLocal']['draw']['toolbar']['buttons']['circle'] = value;
-  }
-
-  static set draw_toolbar_buttons_marker(String value) {
-    context['L']['drawLocal']['draw']['toolbar']['buttons']['marker'] = value;
-  }
-
-  static set draw_handlers_circle_tooltip_start(String value) {
-    context['L']['drawLocal']['draw']['handlers']['circle']['tooltip']
-        ['start'] = value;
-  }
-
-  static set draw_handlers_circle_radius(String value) {
-    context['L']['drawLocal']['draw']['handlers']['circle']['radius'] = value;
-  }
-
-  static set draw_handlers_marker_tooltip_start(String value) {
-    context['L']['drawLocal']['draw']['handlers']['marker']['tooltip']
-        ['start'] = value;
-  }
-
-  static set draw_handlers_polygon_tooltip_start(String value) {
-    context['L']['drawLocal']['draw']['handlers']['polygon']['tooltip']
-        ['start'] = value;
-  }
-
-  static set draw_handlers_polygon_tooltip_cont(String value) {
-    context['L']['drawLocal']['draw']['handlers']['polygon']['tooltip']
-        ['cont'] = value;
-  }
-
-  static set draw_handlers_polygon_tooltip_end(String value) {
-    context['L']['drawLocal']['draw']['handlers']['polygon']['tooltip']
-        ['end'] = value;
-  }
-
-  static set draw_handlers_polyline_error(String value) {
-    context['L']['drawLocal']['draw']['handlers']['polyline']['error'] = value;
-  }
-
-  static set draw_handlers_polyline_tooltip_start(String value) {
-    context['L']['drawLocal']['draw']['handlers']['polyline']['tooltip']
-        ['start'] = value;
-  }
-
-  static set draw_handlers_polyline_tooltip_cont(String value) {
-    context['L']['drawLocal']['draw']['handlers']['polyline']['tooltip']
-        ['cont'] = value;
-  }
-
-  static set draw_handlers_polyline_tooltip_end(String value) {
-    context['L']['drawLocal']['draw']['handlers']['polyline']['tooltip']
-        ['end'] = value;
-  }
-
-  static set draw_handlers_rectangle_tooltip_start(String value) {
-    context['L']['drawLocal']['draw']['handlers']['rectangle']['tooltip']
-        ['start'] = value;
-  }
-
-  static set draw_handlers_simpleshape_tooltip_end(String value) {
-    context['L']['drawLocal']['draw']['handlers']['rectangle']['tooltip']
-        ['end'] = value;
-  }
-
-  static set edit_toolbar_actions_save_title(String value) {
-    context['L']['drawLocal']['edit']['toolbar']['actions']['save']
-        ['title'] = value;
-  }
-
-  static set edit_toolbar_actions_save_text(String value) {
-    context['L']['drawLocal']['edit']['toolbar']['actions']['save']
-        ['text'] = value;
-  }
-
-  static set edit_toolbar_actions_cancel_title(String value) {
-    context['L']['drawLocal']['edit']['toolbar']['actions']['cancel']
-        ['title'] = value;
-  }
-
-  static set edit_toolbar_actions_cancel_text(String value) {
-    context['L']['drawLocal']['edit']['toolbar']['actions']['cancel']
-        ['text'] = value;
-  }
-
-  static set edit_toolbar_buttons_edit(String value) {
-    context['L']['drawLocal']['edit']['toolbar']['buttons']['edit'] = value;
-  }
-
-  static set edit_toolbar_buttons_editDisabled(String value) {
-    context['L']['drawLocal']['edit']['toolbar']['buttons']
-        ['editDisabled'] = value;
-  }
-
-  static set edit_toolbar_buttons_remove(String value) {
-    context['L']['drawLocal']['edit']['toolbar']['buttons']['remove'] = value;
-  }
-
-  static set edit_toolbar_buttons_removeDisabled(String value) {
-    context['L']['drawLocal']['edit']['toolbar']['buttons']
-        ['removeDisabled'] = value;
-  }
-
-  static set edit_handlers_edit_tooltip_text(String value) {
-    context['L']['drawLocal']['edit']['handlers']['edit']['tooltip']
-        ['text'] = value;
-  }
-
-  static set edit_handlers_edit_tooltip_subtext(String value) {
-    context['L']['drawLocal']['edit']['handlers']['edit']['tooltip']
-        ['subtext'] = value;
-  }
-
-  static set edit_handlers_remove_tooltip_text(String value) {
-    context['L']['drawLocal']['edit']['handlers']['remove']['tooltip']
-        ['text'] = value;
-  }
-
   final JsObject control;
 
   factory Draw({String position, Map draw, Map edit}) {
@@ -177,4 +34,73 @@ class Draw implements Control {
     var _draw = new JsObject.jsify(draw);
     control.callMethod('setDrawingOptions', [_draw]);
   }
+
+  Stream<Layer> get onDrawCreated {
+    const type = 'draw:created';
+    JsObject map = control['_map'];
+    if (map == null) {
+      throw new StateError(
+          'Add Draw control to LeafletMap before subscribing to $type');
+    }
+    Function fn;
+    var ctrl = new StreamController<Layer>(onCancel: () {
+      map.callMethod('off', [type, fn]);
+    });
+    fn = (JsObject e) {
+      var layerType = e['layerType'], l = e['layer'];
+      Layer layer;
+      switch (layerType) {
+        case 'marker':
+          layer = new Marker.wrap(l);
+          break;
+        case 'polyline':
+          layer = new Polyline.wrap(l);
+          break;
+        case 'polygon':
+          layer = new Polygon.wrap(l);
+          break;
+        case 'rectangle':
+          layer = new leaflet.Rectangle.wrap(l);
+          break;
+        case 'circle':
+          layer = new Circle.wrap(l);
+          break;
+        default:
+          throw new UnimplementedError(layerType);
+      }
+      ctrl.add(layer);
+    };
+    map.callMethod('on', [type, fn]);
+    return ctrl.stream;
+  }
+
+  Stream<LayerGroup> get onDrawEdited {
+    const type = 'draw:edited';
+    JsObject map = control['_map'];
+    if (map == null) {
+      throw new StateError(
+          'Add Draw control to LeafletMap before subscribing to $type');
+    }
+    Function fn;
+    var ctrl = new StreamController<LayerGroup>(onCancel: () {
+      map.callMethod('off', [type, fn]);
+    });
+    fn = (JsObject e) {
+      var group = new LayerGroup.wrap(e['layers']);
+      ctrl.add(group);
+    };
+    map.callMethod('on', [type, fn]);
+    return ctrl.stream;
+  }
 }
+
+//class DrawCreatedEvent {
+//  final AbstractLayer layer;
+//  final String layerType;
+//  DrawCreatedEvent(this.layer, this.layerType);
+//}
+//
+//class AbstractLayer implements Layer {
+//  final JsObject layer;
+//  AbstractLayer(this.layer);
+//}

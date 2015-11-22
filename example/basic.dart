@@ -1,5 +1,4 @@
 import 'dart:html';
-import 'dart:js';
 
 import 'package:leaflet/leaflet.dart';
 import 'package:leaflet_draw/leaflet_draw.dart';
@@ -14,7 +13,7 @@ main() {
   map.addLayer(drawnItems);
 
   // Set the title to show on the polygon button
-  Draw.draw_toolbar_buttons_polygon = 'Draw a polygon!';
+  drawLocal.draw.toolbar.buttons.polygon = 'Draw a polygon!';
 
   var drawControl = new Draw(
       position: 'topright',
@@ -34,23 +33,20 @@ main() {
       edit: {'featureGroup': drawnItems, 'remove': false});
   map.addControl(drawControl);
 
-  map.on('draw:created').listen((JsObject e) {
-    var type = e['layerType'], layer = e['layer'];
-
-    if (type == 'marker') {
+  drawControl.onDrawCreated.listen((Layer layer) {
+    if (layer is Marker) {
       layer.bindPopup('A popup!');
     }
 
-    drawnItems.addJsLayer(layer);
+    drawnItems.addLayer(layer);
   });
 
-  map.on('draw:edited').listen((JsObject e) {
-//    var layers = e['layers'];
-//    var countOfEditedLayers = 0;
-//    layers.eachLayer((layer) {
-//      countOfEditedLayers++;
-//    });
-//    print("Edited $countOfEditedLayers layers");
+  drawControl.onDrawEdited.listen((LayerGroup layers) {
+    var countOfEditedLayers = 0;
+    layers.eachLayer((layer) {
+      countOfEditedLayers++;
+    });
+    print("Edited $countOfEditedLayers layers");
   });
 
   document.getElementById('changeColor').onClick.listen((_) {
