@@ -1,6 +1,5 @@
 library leaflet.draw;
 
-import 'dart:html';
 import 'dart:async';
 import 'dart:js';
 import 'package:leaflet/leaflet.dart';
@@ -35,6 +34,7 @@ class Draw implements Control {
     control.callMethod('setDrawingOptions', [_draw]);
   }
 
+  /// Triggered when a new vector or marker has been created.
   Stream<Layer> get onDrawCreated {
     const type = 'draw:created';
     JsObject map = control['_map'];
@@ -74,6 +74,7 @@ class Draw implements Control {
     return ctrl.stream;
   }
 
+  /// Triggered when layers in the [FeatureGroup] have been edited and saved.
   Stream<LayerGroup> get onDrawEdited {
     const type = 'draw:edited';
     JsObject map = control['_map'];
@@ -92,15 +93,142 @@ class Draw implements Control {
     map.callMethod('on', [type, fn]);
     return ctrl.stream;
   }
-}
 
-//class DrawCreatedEvent {
-//  final AbstractLayer layer;
-//  final String layerType;
-//  DrawCreatedEvent(this.layer, this.layerType);
-//}
-//
-//class AbstractLayer implements Layer {
-//  final JsObject layer;
-//  AbstractLayer(this.layer);
-//}
+  /// Triggered when layers have been removed (and saved) from the
+  /// [FeatureGroup].
+  Stream<LayerGroup> get onDrawDeleted {
+    const type = 'draw:deleted';
+    JsObject map = control['_map'];
+    if (map == null) {
+      throw new StateError(
+          'Add Draw control to LeafletMap before subscribing to $type');
+    }
+    Function fn;
+    var ctrl = new StreamController<LayerGroup>(onCancel: () {
+      map.callMethod('off', [type, fn]);
+    });
+    fn = (JsObject e) {
+      var group = new LayerGroup.wrap(e['layers']);
+      ctrl.add(group);
+    };
+    map.callMethod('on', [type, fn]);
+    return ctrl.stream;
+  }
+
+  /// Triggered when the user has chosen to draw a particular vector or marker.
+  Stream<String> get onDrawStart {
+    const type = 'draw:start';
+    JsObject map = control['_map'];
+    if (map == null) {
+      throw new StateError(
+          'Add Draw control to LeafletMap before subscribing to $type');
+    }
+    Function fn;
+    var ctrl = new StreamController<LayerGroup>(onCancel: () {
+      map.callMethod('off', [type, fn]);
+    });
+    fn = (JsObject e) {
+      ctrl.add(e['layerType']);
+    };
+    map.callMethod('on', [type, fn]);
+    return ctrl.stream;
+  }
+
+  /// Triggered when the user has finished a particular vector or marker.
+  Stream<String> get onDrawStop {
+    const type = 'draw:stop';
+    JsObject map = control['_map'];
+    if (map == null) {
+      throw new StateError(
+          'Add Draw control to LeafletMap before subscribing to $type');
+    }
+    Function fn;
+    var ctrl = new StreamController<LayerGroup>(onCancel: () {
+      map.callMethod('off', [type, fn]);
+    });
+    fn = (JsObject e) {
+      ctrl.add(e['layerType']);
+    };
+    map.callMethod('on', [type, fn]);
+    return ctrl.stream;
+  }
+
+  /// Triggered when the user starts edit mode by clicking the edit tool
+  /// button.
+  Stream<String> get onEditStart {
+    const type = 'edit:start';
+    JsObject map = control['_map'];
+    if (map == null) {
+      throw new StateError(
+          'Add Draw control to LeafletMap before subscribing to $type');
+    }
+    Function fn;
+    var ctrl = new StreamController<LayerGroup>(onCancel: () {
+      map.callMethod('off', [type, fn]);
+    });
+    fn = (JsObject e) {
+      ctrl.add(e['handler']);
+    };
+    map.callMethod('on', [type, fn]);
+    return ctrl.stream;
+  }
+
+  /// Triggered when the user has finshed editing (edit mode) and saves edits.
+  Stream<String> get onEditStop {
+    const type = 'edit:stop';
+    JsObject map = control['_map'];
+    if (map == null) {
+      throw new StateError(
+          'Add Draw control to LeafletMap before subscribing to $type');
+    }
+    Function fn;
+    var ctrl = new StreamController<LayerGroup>(onCancel: () {
+      map.callMethod('off', [type, fn]);
+    });
+    fn = (JsObject e) {
+      ctrl.add(e['handler']);
+    };
+    map.callMethod('on', [type, fn]);
+    return ctrl.stream;
+  }
+
+  /// Triggered when the user starts remove mode by clicking the remove tool
+  /// button.
+  Stream<String> get onDrawDeleteStart {
+    const type = 'draw:deletestart';
+    JsObject map = control['_map'];
+    if (map == null) {
+      throw new StateError(
+          'Add Draw control to LeafletMap before subscribing to $type');
+    }
+    Function fn;
+    var ctrl = new StreamController<LayerGroup>(onCancel: () {
+      map.callMethod('off', [type, fn]);
+    });
+    fn = (JsObject e) {
+      ctrl.add(e['handler']);
+    };
+    map.callMethod('on', [type, fn]);
+    return ctrl.stream;
+  }
+
+  /// Triggered when the user has finished removing shapes (remove mode) and
+  /// saves.
+  Stream<String> get onDrawDeleteStop {
+    const type = 'draw:deletestop';
+    JsObject map = control['_map'];
+    if (map == null) {
+      throw new StateError(
+          'Add Draw control to LeafletMap before subscribing to $type');
+    }
+    Function fn;
+    var ctrl = new StreamController<LayerGroup>(onCancel: () {
+      map.callMethod('off', [type, fn]);
+    });
+    fn = (JsObject e) {
+      ctrl.add(e['handler']);
+    };
+    map.callMethod('on', [type, fn]);
+    return ctrl.stream;
+  }
+}
