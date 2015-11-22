@@ -1,4 +1,7 @@
-name: draw
-description: A pub package
+name: leaflet_draw
+version: 0.0.1
+description: Draw and edit vectors and markers on Leaflet maps
 dependencies:
-  leaflet: any
+  browser: any
+  leaflet:
+    path: ../leaflet

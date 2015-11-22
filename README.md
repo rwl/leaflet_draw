@@ -1,4 +1,4 @@
 Leaflet.draw
 ============
 
-A port of [Leaflet.draw](https://github.com/Leaflet/Leaflet.draw) to [Dart](https://www.dartlang.org/).
+A [Dart](https://www.dartlang.org/) interface to [Leaflet.draw](https://github.com/Leaflet/Leaflet.draw).

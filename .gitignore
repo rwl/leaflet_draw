@@ -1,9 +1,11 @@
-out/
+.buildlog
+.DS_Store
+.idea
+.pub/
+build/
 packages
+.packages
 pubspec.lock
-
-.idea/
-draw.iml
-
+*.iml
 .project
-/.settings/
+.settings/
